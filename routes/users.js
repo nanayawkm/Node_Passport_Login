@@ -13,7 +13,7 @@ router.get('/login', (req, res) => res.render("Login"))
 
 
 //Register
-router.get('/register', (req, res) => res.render("Register"))
+router.get('/register', (req, res) => res.render("register"))
 
 
 //register Handle
@@ -53,7 +53,7 @@ router.post('/register', (req,res) =>{
             if(user) {
                 //User exists
 
-                errors.push({msg: "email already registered"})
+                errors.push({msg: "this email is already registered"})
                 res.render("register",{
                     errors,
                     name,
@@ -68,9 +68,24 @@ router.post('/register', (req,res) =>{
                     email,
                     password
                 })
+                //hash pasword
+                bcrypt.genSalt(10,(err, salt) => 
+                bcrypt.hash(newUser.password, salt, (err, hash)=>{
 
-                console.log(newUser)
-                res.send ("hello")
+                        if(err) throw err;
+
+                        // Set password to hashed
+                        newUser.password = hash;
+                    // Save user
+                    newUser.save()
+                    .then(user => {
+                        req.flash("success_msg", "you are now registered and can log in")
+                        res.redirect("/users/login")
+                    })
+                    .catch(err => console.log(err))
+
+                }))
+
             }
         })
     }
